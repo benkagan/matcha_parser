@@ -2,6 +2,7 @@ import requests
 import smtplib
 import time
 import datetime
+import sys
 from dotenv import dotenv_values
 from email.message import EmailMessage
 from bs4 import BeautifulSoup
@@ -37,12 +38,16 @@ def send_message(phone_number, carrier):
 
 url = "https://www.marukyu-koyamaen.co.jp/english/shop/products/1191040c1/?currency=USD"
 
+complete = False
 while(True):
     output = ""
     if is_in_stock(get_page_html(url)):
         send_message(config["PHONE_NUMBER"], "verizon")
         output = "The product is in stock. Text Message Sent!"
+        complete = True
     else:
         output = "The product is not in stock. Trying again in " + str(SECONDS) + " seconds."
     print("["+str(datetime.datetime.now())+"]: " + output)
+    if complete:
+        sys.exit(0)
     time.sleep(SECONDS)
