@@ -4,7 +4,6 @@ import time
 import datetime
 import sys
 from dotenv import dotenv_values
-from email.message import EmailMessage
 from bs4 import BeautifulSoup
 
 CARRIERS = {
