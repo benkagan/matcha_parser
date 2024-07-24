@@ -45,9 +45,8 @@ def send_message(phone_number, carrier, matcha_name, url):
 
 i = -1
 while(True):
-    output = ""
-    i += 1
-    url = URLS[MATCHA_NAMES[i % len(MATCHA_NAMES)]]
+    i = (i + 1) % len(MATCHA_NAMES)
+    url = URLS[MATCHA_NAMES[i]]
     if is_in_stock(get_page_html(url)):
         send_message(config["PHONE_NUMBER"], "verizon", MATCHA_NAMES[i], url)
         print("["+str(datetime.datetime.now())+"]: The " + MATCHA_NAMES[i] + " matcha is in stock. Text Message Sent!")
