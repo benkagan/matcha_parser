@@ -12,8 +12,12 @@ CARRIERS = {
     "verizon": "@vtext.com",
     "sprint": "@messaging.sprintpcs.com"
 }
-SECONDS = 30
+SECONDS = 150
 config = dotenv_values(".env")
+URLS = [
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1191040c1/?currency=USD",
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1161020c1/?currency=USD"
+]
 
 def get_page_html(url):
     page = requests.get(url=url)
@@ -24,7 +28,7 @@ def is_in_stock(html):
     in_stock = soup.find_all("p", {"class": "in-stock"})
     return len(in_stock) > 0
 
-def send_message(phone_number, carrier):
+def send_message(phone_number, carrier, url):
     recipient = phone_number + CARRIERS[carrier]
     auth = (config["EMAIL"], config["PASSWORD"])
  
@@ -32,21 +36,17 @@ def send_message(phone_number, carrier):
     server.starttls()
     server.login(auth[0], auth[1])
  
-    message = "The matcha is now in stock! Please proceed to " + url + " to complete the transaction."
+    message = "The matcha is now in stock! Please proceed to " + url
     server.sendmail(auth[0], recipient, message)
 
-url = "https://www.marukyu-koyamaen.co.jp/english/shop/products/1191040c1/?currency=USD"
 
-complete = False
+i = -1
 while(True):
     output = ""
+    url = URLS[(i + 1) % len(URLS)]
     if is_in_stock(get_page_html(url)):
-        send_message(config["PHONE_NUMBER"], "verizon")
-        output = "The product is in stock. Text Message Sent!"
-        complete = True
-    else:
-        output = "The product is not in stock. Trying again in " + str(SECONDS) + " seconds."
-    print("["+str(datetime.datetime.now())+"]: " + output)
-    if complete:
-        sys.exit(0)
+        send_message(config["PHONE_NUMBER"], "verizon", url)
+        print("The product is in stock. Text Message Sent!")
+        break
+    print("["+str(datetime.datetime.now())+"]: The product is not in stock. Trying again in " + str(SECONDS) + " seconds.")
     time.sleep(SECONDS)
