@@ -2,7 +2,6 @@ import requests
 import smtplib
 import time
 import datetime
-import sys
 from dotenv import dotenv_values
 from bs4 import BeautifulSoup
 
@@ -12,8 +11,6 @@ CARRIERS = {
     "verizon": "@vtext.com",
     "sprint": "@messaging.sprintpcs.com"
 }
-SECONDS = 150
-config = dotenv_values(".env")
 MATCHA_NAMES = [
     "Isuzu",
     "Wako"
@@ -22,6 +19,8 @@ URLS = {
     MATCHA_NAMES[0]: "https://www.marukyu-koyamaen.co.jp/english/shop/products/1191040c1/?currency=USD",
     MATCHA_NAMES[1]: "https://www.marukyu-koyamaen.co.jp/english/shop/products/1161020c1/?currency=USD"
 }
+SECONDS = 150
+config = dotenv_values(".env")
 
 def get_page_html(url):
     page = requests.get(url=url)
@@ -29,8 +28,13 @@ def get_page_html(url):
 
 def is_in_stock(html):
     soup = BeautifulSoup(html, 'html.parser')
-    in_stock = soup.find_all("p", {"class": "in-stock"})
-    return len(in_stock) > 0
+    products = soup.find_all("div", {"class": "product-form-row"})
+    for product in products:
+        size_text = product.contents[0].contents[0].contents[1].contents[1].text
+        if "100" in size_text or "200" in size_text:
+            if "in-stock" in product.contents[1].contents[0]['class']:
+                return True
+    return False
 
 def send_message(phone_number, carrier, matcha_name, url):
     recipient = phone_number + CARRIERS[carrier]
